@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { StockIdentifier, PortfolioHolding, StockBasicData } from '../../types';
 import SearchBar from '../search/SearchBar';
@@ -48,14 +47,22 @@ const AddStockForm: React.FC<AddStockFormProps> = ({ onAdd, onClose }) => {
              return;
         }
 
-        onAdd({
-            symbol: selectedStock.symbol,
-            name: selectedStock.name,
-            quantity: qty,
-            buyPrice: selectedStock.currentPrice,
-        });
-
-        onClose();
+        try {
+            onAdd({
+                symbol: selectedStock.symbol,
+                name: selectedStock.name,
+                quantity: qty,
+                buyPrice: selectedStock.currentPrice,
+                exchange: selectedStock.exchange,
+            });
+            onClose();
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('An unexpected error occurred.');
+            }
+        }
     };
 
     return (
@@ -97,7 +104,7 @@ const AddStockForm: React.FC<AddStockFormProps> = ({ onAdd, onClose }) => {
                         />
                     </div>
                     
-                    {error && <p className="text-sm text-red-400">{error}</p>}
+                    {error && <p className="text-sm text-red-400 bg-red-900/20 p-2 rounded-md">{error}</p>}
                     
                     <div className="flex justify-end gap-3 pt-4">
                         <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-colors">Cancel</button>

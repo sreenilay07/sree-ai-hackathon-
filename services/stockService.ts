@@ -1965,7 +1965,7 @@ export const filterStocks = (criteria: ScreenerCriteria): Promise<StockBasicData
     setTimeout(async () => {
       const allStockData = await getAllStocks();
 
-      const results = allStockData.filter(stock => {
+      const filteredResults = allStockData.filter(stock => {
         if (criteria.sector && !stock.sector.toLowerCase().includes(criteria.sector.toLowerCase())) {
           return false;
         }
@@ -2001,7 +2001,18 @@ export const filterStocks = (criteria: ScreenerCriteria): Promise<StockBasicData
 
         return true;
       });
-      resolve(results);
+
+      if (criteria.limit && criteria.limit > 0) {
+        resolve(filteredResults.slice(0, criteria.limit));
+        return;
+      }
+
+      resolve(filteredResults);
     }, MOCK_API_DELAY / 2);
   });
+};
+
+export const getSectors = (): string[] => {
+  const sectors = new Set(Object.values(mockStockDetails).map(stock => stock.sector));
+  return Array.from(sectors).sort();
 };

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StockBasicData, ScreenerCriteria, AIScreenerAnalysis } from '../types';
 import { parseScreenerQuery, getAIScreenerAnalysis } from '../services/geminiService';
-import { filterStocks } from '../services/stockService';
+import { filterStocks, getSectors } from '../services/stockService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ScreenerResultsTable from '../components/screener/ScreenerResultsTable';
 import AIScreenerAnalysisCard from '../components/screener/AIScreenerAnalysisCard';
@@ -12,26 +12,33 @@ const ScreenerPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<StockBasicData[]>([]);
   const [searched, setSearched] = useState(false);
+  const [sectors, setSectors] = useState<string[]>([]);
 
   // New state for AI analysis
   const [aiAnalysis, setAiAnalysis] = useState<AIScreenerAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  useEffect(() => {
+    setSectors(getSectors());
+  }, []);
+
+  const executeSearch = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim()) return;
 
     setIsLoading(true);
     setError(null);
     setSearched(true);
     setResults([]);
-    // Reset AI analysis on new search
     setAiAnalysis(null);
     setAiError(null);
 
     try {
-      const criteria: ScreenerCriteria = await parseScreenerQuery(query);
+      const criteria: ScreenerCriteria = await parseScreenerQuery(searchQuery);
+      if (Object.keys(criteria).length === 0 && !searchQuery.toLowerCase().includes('all stocks')) {
+        setResults([]); // No results for irrelevant queries
+        throw new Error("I couldn't understand that query. Please try phrasing it like 'IT stocks under 500'.");
+      }
       const filteredStocks = await filterStocks(criteria);
       setResults(filteredStocks);
     } catch (err) {
@@ -39,6 +46,17 @@ const ScreenerPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSearch(query);
+  };
+  
+  const handleSectorClick = (sector: string) => {
+    const newQuery = `Show stocks in the "${sector}" sector`;
+    setQuery(newQuery);
+    executeSearch(newQuery);
   };
 
   const handleAnalyzeResults = async () => {
@@ -73,7 +91,7 @@ const ScreenerPage: React.FC = () => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="e.g., show top IT stocks with PE under 30 and promoter holding > 50%"
+            placeholder="e.g., show top 10 IT stocks with PE under 30"
             className="w-full p-4 bg-transparent text-gray-100 placeholder-gray-500 focus:outline-none"
             disabled={isLoading}
           />
@@ -82,10 +100,27 @@ const ScreenerPage: React.FC = () => {
           </button>
         </div>
       </form>
+      
+      {sectors.length > 0 && (
+        <div className="max-w-3xl mx-auto mt-6">
+          <h3 className="text-center text-sm font-semibold text-gray-400 mb-2">Quick Filters by Sector</h3>
+          <div className="flex flex-wrap justify-center gap-2">
+            {sectors.map(sector => (
+              <button
+                key={sector}
+                onClick={() => handleSectorClick(sector)}
+                className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-xs hover:bg-sky-600 hover:text-white transition-colors"
+              >
+                {sector}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-10">
         {isLoading && <div className="flex justify-center p-8"><LoadingSpinner /></div>}
-        {error && <div className="text-center p-8 text-red-400 bg-red-900/20 rounded-lg">{error}</div>}
+        {error && <div className="text-center p-4 text-red-400 bg-red-900/20 rounded-lg">{error}</div>}
         
         {!isLoading && !error && searched && (
           <>

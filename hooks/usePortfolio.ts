@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { PortfolioHolding, PortfolioHoldingWithMarketData } from '../types';
 import { getStockBasicData } from '../services/stockService';
@@ -28,16 +27,29 @@ export const usePortfolio = () => {
   }, [holdings]);
 
   const addHolding = (holding: PortfolioHolding) => {
-    setHoldings(prev => {
-      const existing = prev.find(h => h.symbol === holding.symbol);
-      if (existing) {
-        // Update existing holding: average out the buy price
-        const totalShares = existing.quantity + holding.quantity;
-        const newAvgPrice = ((existing.quantity * existing.buyPrice) + (holding.quantity * holding.buyPrice)) / totalShares;
-        return prev.map(h => h.symbol === holding.symbol ? { ...h, quantity: totalShares, buyPrice: newAvgPrice } : h);
+    const existingByName = holdings.find(h => h.name.toLowerCase() === holding.name.toLowerCase());
+
+    if (existingByName) {
+      // If the same stock from a different exchange is being added, throw an error.
+      if (existingByName.exchange !== holding.exchange) {
+        throw new Error(`You already hold ${holding.name} from ${existingByName.exchange}. Cannot add the same stock from multiple exchanges.`);
       }
-      return [...prev, holding];
-    });
+      
+      // If it's the same stock from the same exchange, update the existing one.
+      setHoldings(prev => {
+        return prev.map(h => {
+          if (h.symbol === holding.symbol) {
+            const totalShares = h.quantity + holding.quantity;
+            const newAvgPrice = ((h.quantity * h.buyPrice) + (holding.quantity * holding.buyPrice)) / totalShares;
+            return { ...h, quantity: totalShares, buyPrice: newAvgPrice };
+          }
+          return h;
+        });
+      });
+    } else {
+      // If it's a new stock, add it.
+      setHoldings(prev => [...prev, holding]);
+    }
   };
 
   const removeHolding = (symbol: string) => {

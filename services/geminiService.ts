@@ -145,8 +145,10 @@ export const parseScreenerQuery = async (query: string): Promise<ScreenerCriteri
   - Extract P/E ratio constraints like 'pe less than 20' (peRatio_lt).
   - Extract dividend yield like 'dividend yield more than 2%' (dividendYield_gt).
   - Identify performance criteria like 'top gainers this week' (gained_week) or 'losers this month' (lost_month).
+  - Extract a specific number of results if mentioned, like 'top 10 stocks' or 'give me 5 companies' (e.g., limit: 10 or limit: 5).
+  - If the query is not related to stock screening (e.g., "hello", "what is the weather"), return an empty JSON object {}.
   
-  Return ONLY the JSON object. Example: for 'show me IT stocks under 1500 with pe less than 25', the output should be {"sector":"IT","price_lt":1500,"peRatio_lt":25}.
+  Return ONLY the JSON object. Example: for 'show me top 10 IT stocks under 1500 with pe less than 25', the output should be {"sector":"IT","price_lt":1500,"peRatio_lt":25,"limit":10}.
   If a criterion is not mentioned, do not include it in the JSON.`;
 
   const response = await ai.models.generateContent({

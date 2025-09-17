@@ -170,6 +170,7 @@ export interface PortfolioHolding {
   name: string;
   quantity: number;
   buyPrice: number;
+  exchange: 'NSE' | 'BSE';
 }
 
 export interface PortfolioHoldingWithMarketData extends PortfolioHolding {
@@ -204,6 +205,7 @@ export interface ScreenerCriteria {
   peRatio_gt?: number;
   dividendYield_gt?: number;
   performance?: 'gained_week' | 'lost_week' | 'gained_month' | 'lost_month';
+  limit?: number;
 }
 
 // For AI Screener Analysis
