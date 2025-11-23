@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PortfolioHolding, PortfolioHoldingWithMarketData } from '../types';
 import { getStockBasicData } from '../services/stockService';
+import { isIndianMarketOpen } from '../services/marketTime';
 
 const PORTFOLIO_STORAGE_KEY = 'sree-ai-portfolio';
 
@@ -104,8 +105,12 @@ export const usePortfolio = () => {
 
 
   useEffect(() => {
-    fetchMarketData();
-    const interval = setInterval(fetchMarketData, 10000); // Refresh every 10 seconds
+    fetchMarketData(); // Fetch once on load to get latest data
+    const interval = setInterval(() => {
+      if (isIndianMarketOpen()) { // Only set up recurring fetch if market is open
+        fetchMarketData();
+      }
+    }, 10000); // Refresh every 10 seconds
     return () => clearInterval(interval);
   }, [fetchMarketData]);
 

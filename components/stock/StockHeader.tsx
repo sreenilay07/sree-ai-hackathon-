@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StockBasicData } from '../../types';
 import { BROKERS } from '../../constants';
+import MarketStatusIndicator from '../common/MarketStatusIndicator';
 
 interface StockHeaderProps {
   stock: StockBasicData | null; // Allow null for loading state
@@ -27,7 +28,10 @@ const StockHeader: React.FC<StockHeaderProps> = ({ stock }) => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold text-sky-400">{stock.name} <span className="text-xl text-gray-400">({stock.symbol} - {stock.exchange})</span></h2>
-          <p className="text-gray-300">Sector: {stock.sector} | Market Cap: {stock.marketCap}</p>
+          <div className="flex items-center gap-4 mt-1">
+            <p className="text-gray-300">Sector: {stock.sector} | Market Cap: {stock.marketCap}</p>
+            <MarketStatusIndicator />
+          </div>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 mt-3 sm:mt-0 w-full sm:w-auto">
             <div className="text-right flex-grow">

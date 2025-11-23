@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AIAnalysisResponse, StockBasicData, PriceDataPoint, ChartInterval } from '../../../types';
 import PriceHistoryChart from '../../charts/PriceHistoryChart';
@@ -34,7 +35,8 @@ const TechnicalsTab: React.FC<TechnicalsTabProps> = ({ analysis, stockData }) =>
       setIsLoadingChart(true);
       setPriceHistory([]); // Clear old data before fetching
       try {
-        const history = await getStockPriceHistory(stockData.symbol, activeInterval);
+        // Pass current price to anchor the chart
+        const history = await getStockPriceHistory(stockData.symbol, activeInterval, stockData.currentPrice);
         setPriceHistory(history);
       } catch (error) {
         console.error("Failed to fetch price history:", error);
@@ -45,7 +47,7 @@ const TechnicalsTab: React.FC<TechnicalsTabProps> = ({ analysis, stockData }) =>
     };
 
     fetchHistory();
-  }, [stockData?.symbol, activeInterval]);
+  }, [stockData?.symbol, activeInterval, stockData?.currentPrice]);
 
 
   useEffect(() => {

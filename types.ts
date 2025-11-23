@@ -1,3 +1,4 @@
+
 export interface StockIdentifier {
   symbol: string;
   name: string;
@@ -111,12 +112,18 @@ export interface AINewsItemAnalysis {
   sentiment: 'Positive' | 'Negative' | 'Neutral';
   originalSource?: string; // To link back if needed
   originalDate?: string;
+  link?: string;
 }
 
 export interface AISectorOutlook {
   growthPotential: string;
   lifespan: string;
   aiRationale: string;
+}
+
+export interface AIEducationalInsights {
+    sectorFactors: string[];
+    observation: string;
 }
 
 export interface AIAnalysisResponse {
@@ -128,10 +135,16 @@ export interface AIAnalysisResponse {
   keyLevels: AIKeyLevels;
   newsAnalysis: AINewsItemAnalysis[];
   sectorOutlook: AISectorOutlook;
-  // Include raw stock data used for generation for consistency
-  stockName: string; 
-  stockSymbol: string;
-  currentPrice: number;
+  educationalInsights?: AIEducationalInsights;
+}
+
+// New interface for the master object returned by the Research-Agent style Gemini call
+export interface ComprehensiveStockAnalysis {
+  basicData: StockBasicData;
+  fundamentals: StockFundamentalData;
+  analysis: AIAnalysisResponse;
+  announcements: CorporateAnnouncement[];
+  peers: StockBasicData[]; // Simplified peer data for comparison
 }
 
 // For chart components

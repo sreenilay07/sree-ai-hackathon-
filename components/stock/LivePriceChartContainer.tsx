@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AIAnalysisResponse, StockBasicData, PriceDataPoint, ChartInterval } from '../../types';
 import PriceHistoryChart from '../charts/PriceHistoryChart';
@@ -28,7 +29,8 @@ const LivePriceChartContainer: React.FC<LivePriceChartContainerProps> = ({ analy
       setIsLoadingChart(true);
       setPriceHistory([]);
       try {
-        const history = await getStockPriceHistory(stockData.symbol, activeInterval);
+        // Pass the real current price to anchor the chart data correctly
+        const history = await getStockPriceHistory(stockData.symbol, activeInterval, stockData.currentPrice);
         setPriceHistory(history);
       } catch (error) {
         console.error("Failed to fetch price history:", error);
@@ -39,7 +41,7 @@ const LivePriceChartContainer: React.FC<LivePriceChartContainerProps> = ({ analy
     };
 
     fetchHistory();
-  }, [stockData?.symbol, activeInterval]);
+  }, [stockData?.symbol, activeInterval, stockData?.currentPrice]);
 
 
   useEffect(() => {
@@ -116,7 +118,7 @@ const LivePriceChartContainer: React.FC<LivePriceChartContainerProps> = ({ analy
         ) : (
             <PriceHistoryChart data={priceHistory} stockData={stockData} />
         )}
-        <p className="text-xs text-gray-500 mt-2 text-center">Note: Chart displays live price updates. Use the brush below to zoom.</p>
+        <p className="text-xs text-gray-500 mt-2 text-center">Note: Chart displays simulated data anchored to live prices for demonstration.</p>
     </div>
   );
 };
